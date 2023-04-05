@@ -1,6 +1,7 @@
 from typing import Union, Tuple, Optional
 from tqdm import tqdm
 
+
 PRAGMA_TYPE = Union[
     None,
     Tuple[Tuple[str, int, int, int], Tuple[str, int, int, int]],

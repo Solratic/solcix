@@ -10,7 +10,7 @@ from solcix.installer import (
     get_available_versions,
     install_solc,
 )
-from solcix.solcixtype import PRAGMA_TYPE, Version
+from solcix.datatypes import PRAGMA_TYPE, Version
 
 
 def resolve_version_from_solidity(

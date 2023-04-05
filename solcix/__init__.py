@@ -1,7 +1,6 @@
 import os
 from .constant import ARTIFACT_DIR
 from .__version__ import __version__
-from .solcixtype import PRAGMA_TYPE, Version
 from .installer import (
     get_available_versions,
     get_installable_versions,
@@ -18,12 +17,8 @@ from .resolver import (
     install_solc_from_solidity,
     resolve_version_from_solidity,
 )
-from .compile import (
-    compile_files,
-    compile_source,
-    compile_standard,
-    solc_execute,
-)
+
+from . import datatypes, compile
 
 
 __all__ = [
@@ -42,13 +37,9 @@ __all__ = [
     "install_solc_from_solidity",
     "resolve_version_from_solidity",
     # Compile
-    "compile_files",
-    "compile_source",
-    "compile_standard",
-    "solc_execute",
+    "compile",
     # Types
-    "PRAGMA_TYPE",
-    "Version",
+    "datatypes",
 ]
 
 

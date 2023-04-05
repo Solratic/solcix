@@ -28,13 +28,22 @@ from solcix.errors import (
     NoSolcInstalledError,
     UnsupportedPlatformError,
 )
-from solcix.solcixtype import Version, ProgressBar
+from solcix.datatypes import Version, ProgressBar
 
 cachedir = ARTIFACT_DIR.joinpath(".solcix", "cache", __version__)
 memory = Memory(cachedir, verbose=0)
 
 
-def clear_cache():
+def clear_cache() -> None:
+    """
+    Clears the cache directory used by `solc_execute` and `solcx.compile_*` functions.
+
+    Notes
+    -----
+    The cache directory is located at "{ARTIFACT_DIR}/.solcix/cache/{version}".
+    This function deletes all files within that directory.
+
+    """
     for file in ARTIFACT_DIR.joinpath(".solcix", "cache").iterdir():
         file.unlink()
 

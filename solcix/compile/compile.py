@@ -1,7 +1,8 @@
+import json
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, Literal
-import json
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 from solcix.errors import (
     ContractNotFoundError,
     InvalidOptionError,
@@ -133,6 +134,52 @@ def compile_source(
     no_optimize_yul: bool = True,
     yul_optimizations: Optional[int] = None,
 ):
+    """
+    Compile Solidity source code into EVM bytecode.
+
+    Parameters:
+    -----------
+    - source : str
+        - The Solidity source code to be compiled.
+    - solc_path : Optional[Union[str, Path]]
+        - The path to the Solidity compiler executable.
+    - solc_version : Optional[str]
+        - The version of the Solidity compiler to use.
+    - import_remappings : Optional[Union[Dict[str, str], List[str], str]]
+        - Remap import paths. This can be a string, a list of strings, or a dictionary.
+    - base_path : Optional[Union[str, Path]]
+        - The base path to use when resolving relative file paths.
+    - allow_paths : Optional[Union[List[Union[str, Path]], str, Path]]
+        - Additional paths to allow when resolving file paths.
+    - output_values : Optional[List[str]]
+        - A list of output types to include in the output JSON.
+    - output_dir : Optional[Union[str, Path]]
+        - The output directory to save the compiled contract artifacts.
+    - overwrite : bool
+        - Whether to overwrite existing output files.
+    - evm_version : Optional[str]
+        - The EVM version to compile the contract for.
+    - revert_strings : Optional[Union[List[str], str]]
+        - A list of revert strings to include in the contract metadata.
+    - metadata_hash : Optional[str]
+        - A string to include in the contract metadata.
+    - metadata_literal : bool
+        - Whether to use the metadata string as a literal or as a path to a file.
+    - optimize : bool
+        - Whether to enable bytecode optimization.
+    - optimize_runs : Optional[int]
+        - The number of optimization runs to perform.
+    - optimize_yul : bool
+        - Whether to optimize Yul code.
+    - no_optimize_yul : bool
+        - Whether to disable Yul optimization.
+    - yul_optimizations : Optional[int]
+        - The level of Yul optimizations to perform.
+
+    Returns:
+    --------
+    A dictionary containing the compiled contract artifacts.
+    """
     return _compile_combined_json(
         solc_path=solc_path,
         solc_version=solc_version,
@@ -175,6 +222,53 @@ def compile_files(
     no_optimize_yul: bool = True,
     yul_optimizations: Optional[int] = None,
 ):
+    """
+        Compile Solidity source code files into EVM bytecode.
+
+    Parameters:
+    -----------
+    - source_files : Union[List[Union[str, Path]], str, Path]
+        - The list of Solidity source code files to be compiled.
+    - solc_path : Optional[Union[str, Path]]
+        - The path to the Solidity compiler executable.
+    - solc_version : Optional[str]
+        - The version of the Solidity compiler to use.
+    - import_remappings : Optional[Union[Dict[str, str], List[str], str]]
+        - Remap import paths. This can be a string, a list of strings, or a dictionary.
+    - base_path : Optional[Union[str, Path]]
+        - The base path to use when resolving relative file paths.
+    - allow_paths : Optional[Union[List[Union[str, Path]], str, Path]]
+        - Additional paths to allow when resolving file paths.
+    - output_values : Optional[List[str]]
+        - A list of output types to include in the output JSON.
+    - output_dir : Optional[Union[str, Path]]
+        - The output directory to save the compiled contract artifacts.
+    - overwrite : bool
+        - Whether to overwrite existing output files.
+    - evm_version : Optional[str]
+        - The EVM version to compile the contract for.
+    - revert_strings : Optional[Union[List[str], str]]
+        - A list of revert strings to include in the contract metadata.
+    - metadata_hash : Optional[str]
+        - A string to include in the contract metadata.
+    - metadata_literal : bool
+        - Whether to use the metadata string as a literal or as a path to a file.
+    - optimize : bool
+        - Whether to enable bytecode optimization.
+    - optimize_runs : Optional[int]
+        - The number of optimization runs to perform.
+    - optimize_yul : bool
+        - Whether to optimize Yul code.
+    - no_optimize_yul : bool
+        - Whether to disable Yul optimization.
+    - yul_optimizations : Optional[int]
+        - The level of Yul optimizations to perform.
+
+    Returns:
+    --------
+    A dictionary containing the compiled contract artifacts.
+
+    """
     return _compile_combined_json(
         solc_path=solc_path,
         solc_version=solc_version,
@@ -206,6 +300,29 @@ def compile_standard(
     output_dir: Optional[Union[str, Path]] = None,
     overwrite: bool = False,
 ) -> Dict[str, Any]:
+    """
+    Compile Solidity contracts from standard JSON input.
+
+    Parameters:
+    - input_data (Dict[str, Any]): The standard JSON input containing the Solidity contract(s) to compile.
+    - solc_path (Optional[Union[str, Path]]): The path to the solc binary to use. If not specified, the latest version of solc available on the system will be used.
+    - solc_version (Optional[str]): The specific version of solc to use. If specified, `solc_path` will be ignored.
+    - base_path (Optional[str]): Base path to use for resolving relative import statements.
+    - allow_paths (Optional[Union[List[Union[str, Path]], str, Path]]): Paths to search for the referenced files.
+    - output_dir (Optional[Union[str, Path]]): The directory to output the compiled contracts to.
+    - overwrite (bool): Whether or not to overwrite existing output files.
+
+    Returns:
+    - Dict[str, Any]: The compiled contracts and related data as returned by solc.
+
+    Raises:
+    - ContractNotFoundError: If no Solidity source files are found in the input data.
+    - SolcError: If there is an error encountered while compiling the contracts. This includes both compilation errors and other errors, such as invalid input data.
+
+    Note:
+    - This function is intended to compile Solidity contracts using standard JSON input format. For other input formats, see `compile_files` or `compile_source`.
+
+    """
     if not input_data.get("sources"):
         raise ContractNotFoundError(input_data)
 
@@ -248,6 +365,30 @@ def compile_standard(
 
 
 def _get_combined_json_outputs(solc_path: Union[Path, str] = None) -> str:
+    """
+    Get the combined JSON output options for a given `solc_path`.
+
+    Parameters
+    -----------
+    solc_path : Union[Path, str], optional
+        The path to the solc executable. If not provided, it will try to locate the executable.
+
+    Returns
+    --------
+    str
+        The combined JSON output options for solc.
+
+    Raises
+    -------
+    SolcNotFoundError
+        If the `solc_path` is not provided and the executable is not found.
+
+    Examples:
+    ---------
+    >>> _get_combined_json_outputs('/usr/local/bin/solc')
+    'bin,abi,interface,metadata,ir,ast'
+
+    """
     if solc_path is None:
         solc_path = get_executable()
 
@@ -257,6 +398,20 @@ def _get_combined_json_outputs(solc_path: Union[Path, str] = None) -> str:
 
 
 def _parse_compiler_output(stdout: str) -> Dict[str, Any]:
+    """
+    Parses the compiler output from JSON to a dictionary.
+
+    Parameters
+    ----------
+    - stdout (str)
+        - The standard output from the Solidity compiler.
+
+    Returns
+    -------
+    - Dict[str, Any]
+        - A dictionary of the compiled contracts and their details.
+
+    """
     output = json.loads(stdout)
 
     contracts = output.get("contracts", {})
@@ -281,6 +436,40 @@ def _compile_combined_json(
     allow_empty: Optional[bool] = False,
     **kwargs: Any,
 ) -> Dict[str, Any]:
+    """
+    Compile Solidity source code into a combined JSON file.
+
+    Parameters
+    ----------
+    - output_values (Optional[List])
+        - A list of output values.
+    - solc_path (Union[str, Path, None])
+        - The path to the solc binary.
+    - solc_version (Optional[str])
+        - The solc version to use. If `None`, the global version `solc` will be used.
+    - output_dir (Union[str, Path, None])
+        - The directory to save the combined JSON file. If `None`, the file will not be saved.
+    - overwrite (Optional[bool])
+        - Whether to overwrite the existing output file with the same name. Default is `False`.
+    - allow_empty (Optional[bool])
+        - Whether to allow the function to return an empty dictionary when no contract is found in the source code. Default is `False`.
+    - **kwargs
+        - Additional keyword arguments to pass to the solc compiler.
+
+    Returns
+    -------
+    - Dict[str, Any]
+        - A dictionary containing the compiled contracts.
+
+    Raises
+    ------
+    - FileExistsError: If `output_dir` is a file or the output file already exists and `overwrite` is `False`.
+    - ContractNotFoundError: If the solc compiler fails to compile the source code or no contract is found in the source code.
+
+    Notes
+    -----
+    - See the [Solidity documentation](https://docs.soliditylang.org/en/v0.8.14/using-the-compiler.html) for more information on how to use the solc compiler.
+    """
     if solc_path is None:
         solc_path = get_executable(solc_version)
 
