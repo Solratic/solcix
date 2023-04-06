@@ -58,22 +58,22 @@ solcix install 0.8.4 0.7.6
 
 ### Listing available Solidity compilers
 
-The `versions` command can be used to list all available versions of the Solidity compiler:
-
-Example usage:
-
-```bash
-solcix versions
-```
-
-### Listing installed Solidity compilers
-
 The `ls` command can be used to list all available versions of the Solidity compiler:
 
 Example usage:
 
 ```bash
 solcix ls
+```
+
+### Listing installed Solidity compilers
+
+The `installed` command can be used to list all available versions of the Solidity compiler:
+
+Example usage:
+
+```bash
+solcix installed
 ```
 
 If global / local version is set, it will be displayed as below:
