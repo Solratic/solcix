@@ -42,19 +42,33 @@ Uses the [pipenv](https://pipenv.pypa.io/en/latest/) package manager to install 
 pipenv install solcix
 ```
 
+## Enable Auto-Completion
+
+Enable auto-completion for `solcix` by running the following command:
+
+### With Bash
+
+```bash
+_SOLCIX_COMPLETE=bash_source solcix > ~/.solcix-complete.bash
+source ~/.solcix-complete.bash
+```
+
+### With Zsh
+
+```zsh
+_SOLCIX_COMPLETE=zsh_source solcix > ~/.solcix-complete.zsh
+source ~/.solcix-complete.zsh
+```
+
+### With Fish
+
+```fish
+_SOLCIX_COMPLETE=fish_source solcix > ~/.config/fish/completions/solcix.fish
+```
+
 ## Usage - CLI
 
 Solcix can be used as a library or as a command line tool. Here are the available commands:
-
-### Installing Solidity compilers
-
-The `install` command can be used to install one or more versions of the Solidity compiler:
-
-Example usage:
-
-```bash
-solcix install 0.8.4 0.7.6
-```
 
 ### Listing available Solidity compilers
 
@@ -64,6 +78,16 @@ Example usage:
 
 ```bash
 solcix ls
+```
+
+### Installing Solidity compilers
+
+The `install` command can be used to install one or more versions of the Solidity compiler:
+
+Example usage:
+
+```bash
+solcix install 0.8.4 0.7.6
 ```
 
 ### Listing installed Solidity compilers
@@ -112,6 +136,16 @@ Simply run the command will see the changes:
 
 ```bash
 solc --version
+```
+
+### Show current Solidity compiler version
+
+The `current` command can be used to show the current version of the Solidity compiler (local version takes precedence over global version):
+
+Example usage:
+
+```bash
+solcix current
 ```
 
 ### Uninstalling Solidity compilers

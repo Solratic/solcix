@@ -52,6 +52,9 @@ def ls():
 def installed():
     installed = solcix.get_installed_versions()
     installed = sorted(installed, key=Version)
+    if len(installed) == 0:
+        print(Fore.YELLOW + "No solc binary is installed. Please use `solcix install` or `solc use` to install solc." + Style.RESET_ALL)
+        return
     try:
         current, _ = solcix.current_version()
         for version in installed:
@@ -94,7 +97,7 @@ def uninstall(version: Union[List[str], str]):
 def prune():
     opt = click.confirm(default=False, text="Are you sure to uninstall all solc binaries, caches, and config files?")
     if opt is False:
-        print(f"{Fore.YELLOW}You have canceled the operation. Indeed, a wise choice!{Style.RESET_ALL}")
+        print(f"👀{Fore.YELLOW} You have canceled the operation. Indeed, a wise choice!{Style.RESET_ALL} 👀")
         return
     # Delete all cached versions
     solcix.clear_cache()
