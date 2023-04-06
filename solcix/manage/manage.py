@@ -37,7 +37,7 @@ def current_version() -> Tuple[str, str]:
                 version = f.read()
         else:
             raise NotInstalledError(
-                "💫 No solc version set. Run `solcix global VERSION`, `solcix local Version` or set SOLC_VERSION environment variable. 💫"
+                "💫 No solc version set. Run `solcix use global VERSION`, `solcix use local Version` or set SOLC_VERSION environment variable. 💫"
             )
 
     versions: List[str] = get_installed_versions()
