@@ -1,6 +1,6 @@
 from typing import Union, Tuple, Optional
 from tqdm import tqdm
-
+from ..utils import is_valid_version
 
 PRAGMA_TYPE = Union[
     None,
@@ -23,9 +23,8 @@ class Version:
             AssertionError: If the input version string does not have exactly three segments
                 separated by periods.
         """
-        segments = version.split(".")
-        assert len(segments) == 3, f"Invalid version string {version}"
-        self.major, self.minor, self.patch = map(int, segments)
+        assert is_valid_version(version), f"Invalid version string {version}"
+        self.major, self.minor, self.patch = map(int, version.split("."))
 
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, Version):

@@ -16,7 +16,8 @@ class EarliestRelease(Enum):
 
 
 HOME = Path(os.environ.get("VIRTUAL_ENV", Path.home()))
-ARTIFACT_DIR = HOME.joinpath("solcix", "artifacts")
+SOLCIX_DIR = HOME.joinpath(".solcix")
+ARTIFACT_DIR = HOME.joinpath(".solcix", "artifacts")
 
 CRYTIC_SOLC_ARTIFACTS = (
     "https://raw.githubusercontent.com/crytic/solc/master/linux/amd64/"

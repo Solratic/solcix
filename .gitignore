@@ -1,2 +1,8 @@
-__pycache__
+__pycache__/
+.tox/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
 **env**

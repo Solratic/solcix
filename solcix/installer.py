@@ -1,15 +1,15 @@
 import hashlib
 import json
 import os
+import shutil
 import sys
 from collections import defaultdict
 from glob import glob
 from os import access, makedirs
 from pathlib import Path
-from typing import Iterable, Tuple, List, Union
+from typing import Iterable, List, Tuple, Union
 from urllib.request import urlopen, urlretrieve
 from zipfile import ZipFile
-import shutil
 
 from Crypto.Hash import keccak
 from joblib import Memory
@@ -22,13 +22,15 @@ from solcix.constant import (
     EarliestRelease,
     Platform,
 )
+from solcix.datatypes import ProgressBar, Version
 from solcix.errors import (
     ChecksumMismatchError,
     ChecksumMissingError,
-    NoSolcInstalledError,
+    NoSolcVersionInstalledError,
     UnsupportedPlatformError,
 )
-from solcix.datatypes import Version, ProgressBar
+
+from .utils import is_valid_version
 
 cachedir = ARTIFACT_DIR.joinpath(".solcix", "cache", __version__)
 memory = Memory(cachedir, verbose=0)
@@ -45,7 +47,7 @@ def clear_cache() -> None:
 
     """
     for file in ARTIFACT_DIR.joinpath(".solcix", "cache").iterdir():
-        file.unlink()
+        shutil.rmtree(file)
 
 
 def _get_platform() -> Platform:
@@ -187,7 +189,7 @@ def _get_version_dict(releases: dict[str, str]) -> dict[int, dict[int, dict[int,
 
 
 @memory.cache
-def _get_version_objects(releases: dict[str, str]) -> list[Version]:
+def get_version_objects(releases: dict[str, str]) -> list[Version]:
     """
     Retrieve a list of Version objects from a dictionary of release versions.
 
@@ -279,7 +281,56 @@ def _verify_checksum(version: str) -> None:
         raise ChecksumMismatchError(_get_platform().value, version)
 
 
-def _get_earliest_release() -> str:
+def verify_solc(
+    version: Union[List[str], str],
+    reinstall: bool = True,
+    verbose: bool = True,
+) -> None:
+    """
+    Verifies the SHA256 and Keccak256 checksums of the local Solidity compiler artifact file.
+    If the specified version is a list, the checksums of all versions are verified.
+    It will default to reinstall the broken version.
+
+    Parameters
+    ----------
+        version : Union[List[str], str]
+            The version of the Solidity compiler.
+
+        reinstall : bool
+            If the checksums do not match, reinstall the specified version.
+
+    Raises
+    ------
+        ValueError
+            If the specified version or platform is not installed, or if the checksums do not match.
+    """
+    if isinstance(version, str):
+        version = [version]
+    fixs = []
+    for v in version:
+        try:
+            v = Version(v)
+            _verify_checksum(v)
+        except AssertionError:
+            if verbose:
+                print(
+                    f"Since solc-{v} is not a valid version, checksum verification is skipped."
+                )
+        except ChecksumMismatchError:
+            if reinstall:
+                fixs.append(v)
+        except FileNotFoundError:
+            if verbose:
+                print(
+                    f"Since solc-{v} is not installed, checksum verification is skipped."
+                )
+    if reinstall and len(fixs) > 0:
+        if verbose:
+            print(f"Reinstalling broken versions {', '.join([str(v) for v in fixs]) }")
+        install_solc(fixs)
+
+
+def get_earliest_release() -> str:
     """
     Returns the earliest release version of the Solidity compiler.
 
@@ -378,12 +429,17 @@ def install_solc(
     # Download and install specified versions
     for version in versions:
         try:
-            major, minor, patch = map(int, version.split("."))
-        except ValueError:
+            v = Version(version)
+            major, minor, patch = v.major, v.minor, v.patch
+        except Exception as e:
+            if verbose:
+                print(f"solc-{version} is not a valid version. {e}")
             errors.append(version)
             continue
 
         if version in installed:
+            if verbose:
+                print(f"solc-{version} is already installed.")
             skipped.append(version)
             continue
 
@@ -397,11 +453,16 @@ def install_solc(
         artifact_parent = Path(ARTIFACT_DIR.joinpath(f"solc-{version}"))
         artifact_path = Path(artifact_parent.joinpath(f"solc-{version}"))
         makedirs(artifact_parent, exist_ok=True)
-        urlretrieve(
-            url=url,
-            filename=artifact_path,
-            reporthook=ProgressBar(version) if verbose else None,
-        )
+        try:
+            urlretrieve(
+                url=url,
+                filename=artifact_path,
+                reporthook=ProgressBar(version) if verbose else None,
+            )
+        except:
+            shutil.rmtree(artifact_parent)
+            errors.append(version)
+            continue
 
         # Verify artifact checksum
         _verify_checksum(version)
@@ -449,19 +510,21 @@ def get_executable(
         executable_path = Path(solc_path)
         if executable_path.exists():
             return executable_path
-        raise NoSolcInstalledError(f"solc binary not found at path: {executable_path}")
+        raise NoSolcVersionInstalledError(
+            f"solc binary not found at path: {executable_path}"
+        )
 
     if version is None:
         default_executable_path = _get_default_solc_path("solc")
         if default_executable_path is None:
-            raise NoSolcInstalledError("No default solc binary found")
+            raise NoSolcVersionInstalledError("No default solc binary found")
         return default_executable_path
 
     artifact_parent = Path(ARTIFACT_DIR.joinpath(f"solc-{version}"))
     artifact_path = Path(artifact_parent.joinpath(f"solc-{version}"))
 
     if not artifact_path.exists():
-        raise NoSolcInstalledError(f"solc version {version} is not installed")
+        raise NoSolcVersionInstalledError(f"solc version {version} is not installed")
 
     return artifact_path
 

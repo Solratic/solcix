@@ -10,6 +10,7 @@ from .installer import (
     clear_cache,
     install_solc,
     uninstall_solc,
+    verify_solc,
 )
 from .resolver import (
     get_compatible_versions,
@@ -18,7 +19,7 @@ from .resolver import (
     resolve_version_from_solidity,
 )
 
-from . import datatypes, compile
+from . import datatypes, compile, manage
 
 
 __all__ = [
@@ -31,6 +32,7 @@ __all__ = [
     "clear_cache",
     "install_solc",
     "uninstall_solc",
+    "verify_solc",
     # Resolver
     "get_compatible_versions",
     "get_recommended_version",
@@ -38,6 +40,8 @@ __all__ = [
     "resolve_version_from_solidity",
     # Compile
     "compile",
+    # Manage
+    "manage",
     # Types
     "datatypes",
 ]

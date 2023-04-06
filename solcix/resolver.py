@@ -4,9 +4,9 @@ from pathlib import Path
 import os
 from solcix.errors import NoCompatibleVersionError
 from solcix.installer import (
-    _get_earliest_release,
+    get_earliest_release,
     _get_version_dict,
-    _get_version_objects,
+    get_version_objects,
     get_available_versions,
     install_solc,
 )
@@ -109,7 +109,7 @@ def get_compatible_versions(pragma: PRAGMA_TYPE) -> Union[List[str], str, None]:
     if pragma is None:
         return None
     releases, _ = get_available_versions()
-    versions = _get_version_objects(releases)
+    versions = get_version_objects(releases)
     compatibles = []
     first_operator, first_major, first_minor, first_patch = pragma[0]
     first_version = Version(f"{first_major}.{first_minor}.{first_patch}")
@@ -201,7 +201,7 @@ def get_recommended_version(pragma: PRAGMA_TYPE) -> str:
         else:
             return f"{first_major}.{first_minor}.{first_patch + 1}"
     if first_operator == "<":
-        earliest = Version(_get_earliest_release())
+        earliest = Version(get_earliest_release())
         if Version(f"{first_major}.{first_minor}.{first_patch}") <= earliest:
             NoCompatibleVersionError("earliest", earliest)
         patches = {p for p in version_dict[first_major][first_minor]}

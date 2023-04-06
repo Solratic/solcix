@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from solcix.errors import (
     ContractNotFoundError,
     InvalidOptionError,
-    NoSolcInstalledError,
+    NoSolcVersionInstalledError,
     SolcError,
     UnrecognizedOptionError,
 )
@@ -50,7 +50,7 @@ def solc_execute(
     if solc_path is not None:
         solc_path = Path(solc_path)
         if not solc_path.exists():
-            raise NoSolcInstalledError(version=solc_path.name)
+            raise NoSolcVersionInstalledError(version=solc_path.name)
     else:
         solc_path = get_executable()
 
@@ -133,6 +133,7 @@ def compile_source(
     optimize_yul: bool = False,
     no_optimize_yul: bool = True,
     yul_optimizations: Optional[int] = None,
+    **kwargs: Any,
 ):
     """
     Compile Solidity source code into EVM bytecode.
@@ -221,6 +222,7 @@ def compile_files(
     optimize_yul: bool = False,
     no_optimize_yul: bool = True,
     yul_optimizations: Optional[int] = None,
+    **kwargs: Any,
 ):
     """
         Compile Solidity source code files into EVM bytecode.
@@ -299,6 +301,7 @@ def compile_standard(
     allow_paths: Optional[Union[List[Union[str, Path]], str, Path]] = None,
     output_dir: Optional[Union[str, Path]] = None,
     overwrite: bool = False,
+    **kwargs: Any,
 ) -> Dict[str, Any]:
     """
     Compile Solidity contracts from standard JSON input.
@@ -435,7 +438,7 @@ def _compile_combined_json(
     overwrite: Optional[bool] = False,
     allow_empty: Optional[bool] = False,
     **kwargs: Any,
-) -> Dict[str, Any]:
+) -> Dict[str, Dict[str, Any]]:
     """
     Compile Solidity source code into a combined JSON file.
 

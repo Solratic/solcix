@@ -37,7 +37,7 @@ class NoCompatibleVersionError(Exception):
         return f"No compatible version found, {self.type} version is {self.value}"
 
 
-class NoSolcInstalledError(Exception):
+class NoSolcVersionInstalledError(Exception):
     def __init__(self, version: str = "") -> None:
         self.version = version
 
@@ -105,3 +105,11 @@ class SolcError(Exception):
             "\n> stderr:"
             f"\n{self.stderr_data}"
         ).strip()
+
+
+class NotInstalledError(Exception):
+    def __init__(self, msg: str) -> None:
+        self.msg = msg
+
+    def __str__(self) -> str:
+        return self.msg
