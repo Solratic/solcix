@@ -4,6 +4,7 @@ import json
 import textwrap
 from typing import List, Union
 import pyfiglet
+import subprocess
 
 import click
 from colorama import Fore, Style
@@ -13,6 +14,7 @@ import solcix.resolver
 from solcix.__version__ import __version__
 from solcix.datatypes import Version
 from solcix.errors import NotInstalledError
+from .constant import ARTIFACT_DIR
 
 CONTEXT_SETTINGS = dict(
     help_option_names=["-h", "--help"],
@@ -138,6 +140,14 @@ def resolve(file: str, recommand: bool):
             print(version)
 
 
-
-if __name__ == "__main__":
-    cli()
+def solc() -> None:
+    try:
+        current = solcix.manage.current_version()
+        version, _ = current
+        path = ARTIFACT_DIR.joinpath(f"solc-{version}", f"solc-{version}")
+        subprocess.run([str(path), *sys.argv[1:]], check=True)
+    except NotInstalledError as e:
+        print(Fore.RED + str(e) + Style.RESET_ALL)
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        sys.exit(e.returncode)

@@ -46,7 +46,8 @@ def current_version() -> Tuple[str, str]:
         raise NotInstalledError(
             f"\n😱 Version '{version}' not installed (set by {source}). 😱"
             f"\nRun `solcix install {version}`."
-            f"\nOr use one of the following versions: {versions}"
+            f"\nOr use one of the following versions:\n"
+            f"{', '.join(versions)}"
         )
 
     return version, source
