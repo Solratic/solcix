@@ -10,7 +10,6 @@ from colorama import Fore, Style
 
 import solcix.installer
 import solcix.resolver
-from solcix.__version__ import __version__
 from solcix.datatypes import Version
 from solcix.errors import NotInstalledError
 from .constant import ARTIFACT_DIR
@@ -26,7 +25,7 @@ VERSION_INFO = f"version  |  %(version)s \n"
 
 # fmt: off
 @click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True, no_args_is_help=True,)
-@click.version_option(version=__version__, prog_name="solcix", message=f"{Fore.YELLOW}{pyfiglet.figlet_format('welcome to solcix')}{Style.RESET_ALL} {VERSION_INFO}")
+@click.version_option(package_name="solcix", message=f"{Fore.YELLOW}{pyfiglet.figlet_format('welcome to solcix')}{Style.RESET_ALL} {VERSION_INFO}")
 def cli():
     pass
 

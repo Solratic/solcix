@@ -14,7 +14,6 @@ from zipfile import ZipFile
 from Crypto.Hash import keccak
 from joblib import Memory
 
-from solcix.__version__ import __version__
 from solcix.constant import (
     ARTIFACT_DIR,
     SOLCIX_DIR,
@@ -32,7 +31,8 @@ from solcix.errors import (
     NotInstalledError,
 )
 
-cachedir = ARTIFACT_DIR.joinpath(".solcix", "cache", __version__)
+cachedir = ARTIFACT_DIR.joinpath(".solcix", "cache")
+os.makedirs(cachedir, exist_ok=True)
 memory = Memory(cachedir, verbose=0)
 
 

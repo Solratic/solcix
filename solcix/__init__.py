@@ -1,6 +1,5 @@
 import os
 from .constant import ARTIFACT_DIR
-from .__version__ import __version__
 from .installer import (
     get_available_versions,
     get_installable_versions,
@@ -19,7 +18,6 @@ from .resolver import (
     install_solc_from_solidity,
     resolve_version_from_solidity,
 )
-
 from . import datatypes, compile, manage
 
 

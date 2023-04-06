@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "solcix"
-version = "0.1.3-dragon"
+version = "0.1.4"
 description = "A Python wrapper for the Solidity compiler. Switch between versions, compile, and manage artifacts."
 authors = ["alan890104 <alan890104@gmail.com>"]
 readme = "README.md"
