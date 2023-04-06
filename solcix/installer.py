@@ -7,7 +7,7 @@ from collections import defaultdict
 from glob import glob
 from os import access, makedirs
 from pathlib import Path
-from typing import Iterable, List, Tuple, Union
+from typing import Iterable, List, Tuple, Union, Optional, Set, Dict, Any
 from urllib.request import urlopen, urlretrieve
 from zipfile import ZipFile
 
@@ -17,6 +17,7 @@ from joblib import Memory
 from solcix.__version__ import __version__
 from solcix.constant import (
     ARTIFACT_DIR,
+    SOLCIX_DIR,
     CRYTIC_SOLC_ARTIFACTS,
     CRYTIC_SOLC_JSON,
     EarliestRelease,
@@ -28,9 +29,8 @@ from solcix.errors import (
     ChecksumMissingError,
     NoSolcVersionInstalledError,
     UnsupportedPlatformError,
+    NotInstalledError,
 )
-
-from .utils import is_valid_version
 
 cachedir = ARTIFACT_DIR.joinpath(".solcix", "cache", __version__)
 memory = Memory(cachedir, verbose=0)
@@ -94,7 +94,7 @@ def _get_url(version: str = None, artifact: str = "") -> Tuple[str, str]:
 
 
 @memory.cache
-def get_available_versions() -> Tuple[dict[str, str], str]:
+def get_available_versions() -> Tuple[Dict[str, str], str]:
     """
     Returns a tuple containing a dictionary of available Solidity compiler versions and the latest version.
 
@@ -130,12 +130,12 @@ def get_available_versions() -> Tuple[dict[str, str], str]:
     return releases, latest
 
 
-def get_installed_versions() -> set[str]:
+def get_installed_versions() -> Set[str]:
     """Returns a set of installed versions."""
     return {f.removeprefix("solc-") for f in glob("solc-*", root_dir=ARTIFACT_DIR)}
 
 
-def get_installable_versions() -> list[str]:
+def get_installable_versions() -> List[str]:
     """Returns a list of installable versions ordered by version."""
     releases, _ = get_available_versions()
     installable = list(set(releases.keys()) - get_installed_versions())
@@ -149,8 +149,55 @@ def get_latest_version() -> str:
     return latest
 
 
+def current_version() -> Tuple[str, str]:
+    """
+    Get the current version of the Solidity compiler.
+    Local version takes precedence over global version.
+
+    Raises
+    ------
+    NotInstalledError
+        If no version is set.
+
+    Returns:
+    --------
+    A tuple containing the current version and the path of the version information.
+    """
+    if os.path.isfile(".solcix"):
+        with open(".solcix", "r", encoding="utf-8") as f:
+            version = f.read()
+            source = ".solcix"
+    else:
+        source: str = "SOLC_VERSION"
+        version: Any = os.environ.get(source)
+
+    if not version:
+        source_path = SOLCIX_DIR.joinpath("global-version")
+        source = source_path.as_posix()
+
+        if source_path.is_file():
+            with open(source_path, encoding="utf-8") as f:
+                version = f.read()
+        else:
+            raise NotInstalledError(
+                "💫 No solc version set. Run `solcix use global VERSION`, `solcix use local Version` or set SOLC_VERSION environment variable. 💫"
+            )
+
+    versions: List[str] = get_installed_versions()
+
+    if version not in versions:
+        raise NotInstalledError(
+            f"\n😱 Version '{version}' not installed (set by {source}). 😱"
+            f"\nRun `solcix install {version}`."
+            f"\nOr use one of the following versions:\n"
+            f"{', '.join(versions)}"
+        )
+
+    return version, source
+
+
 @memory.cache
-def _get_version_dict(releases: dict[str, str]) -> dict[int, dict[int, dict[int, str]]]:
+def _get_version_dict(releases: Dict[str, str]) -> Dict[int, Dict[int, Dict[int, str]]]:
     """
     Returns a nested dictionary of Solidity compiler releases, organized by major, minor, and patch version numbers.
 
@@ -189,7 +236,7 @@ def _get_version_dict(releases: dict[str, str]) -> dict[int, dict[int, dict[int,
 
 
 @memory.cache
-def get_version_objects(releases: dict[str, str]) -> list[Version]:
+def get_version_objects(releases: Dict[str, str]) -> List[Version]:
     """
     Retrieve a list of Version objects from a dictionary of release versions.
 
@@ -351,28 +398,38 @@ def get_earliest_release() -> str:
         return EarliestRelease.WINDOWS.value
 
 
-def _get_default_solc_path(program: Union[str, Path]) -> Union[Path, None]:
-    def is_executable(path: Path) -> bool:
-        return path.is_file() and access(path, os.X_OK)
+def _get_default_solc_path() -> Optional[Path]:
+    """
+    Returns the default path to the solc binary.
 
-    fpath, _ = os.path.split(program)
-    if fpath:
-        if is_executable(fpath):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = Path(path).joinpath(program)
-            if is_executable(exe_file):
-                return exe_file
+    The function tries to determine the current version of solc and returns the path to the solc binary
+    for that version. If the binary is not found or is not executable, None is returned.
+
+    Returns:
+        Path or None: The path to the solc binary for the current version of solc, or None if the binary
+        cannot be found or is not executable.
+    """
+    try:
+        version = None
+        _, path = current_version()
+        with open(path, "r") as f:
+            version = f.read().strip()
+        executable = ARTIFACT_DIR.joinpath(f"solc-{version}", f"solc-{version}")
+        executable = executable.as_posix()
+        # If the binary exists and is executable, return its path
+        if os.path.isfile(executable) and access(executable, os.X_OK):
+            return executable
+    except Exception as e:
+        print(e)
+    # If the binary cannot be found or is not executable, return None
     return None
 
 
 def install_solc(
-    versions: str | Iterable[str],
+    versions: Union[str, Iterable[str]],
     use_cache: bool = True,
     verbose: bool = True,
-) -> tuple[list[str], list[str], list[str]]:
+) -> Tuple[List[str], List[str], List[str]]:
     """
     Downloads and installs Solidity compiler versions specified in the `versions` parameter.
 
@@ -487,12 +544,12 @@ def get_executable(
     version: Union[str, Version] = None, solc_path: Union[Path, str] = None
 ) -> Union[Path, None]:
     """
-    Get the path of the installed solc binary.
+    Get the path of the installed solc binary. Default is the local or global installed solc binary.
 
     Parameters
     ----------
     version: str or Version, optional
-        The version of solc to look for. If None, returns the default installed solc binary.
+        The version of solc to look for. If None, returns local or global installed solc binary.
     solc_path: Path or str, optional
         The path to a solc binary. If provided, ignores version param and returns the path to the binary if it exists.
 
@@ -515,13 +572,12 @@ def get_executable(
         )
 
     if version is None:
-        default_executable_path = _get_default_solc_path("solc")
+        default_executable_path = _get_default_solc_path()
         if default_executable_path is None:
             raise NoSolcVersionInstalledError("No default solc binary found")
         return default_executable_path
 
-    artifact_parent = Path(ARTIFACT_DIR.joinpath(f"solc-{version}"))
-    artifact_path = Path(artifact_parent.joinpath(f"solc-{version}"))
+    artifact_path = Path(ARTIFACT_DIR.joinpath(f"solc-{version}"), f"solc-{version}")
 
     if not artifact_path.exists():
         raise NoSolcVersionInstalledError(f"solc version {version} is not installed")
@@ -530,7 +586,7 @@ def get_executable(
 
 
 def uninstall_solc(
-    versions: str | Iterable[str],
+    versions: Union[str, Iterable[str]],
     verbose: bool = True,
 ) -> Tuple[List[str], List[str], List[str]]:
     """

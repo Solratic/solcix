@@ -1,7 +1,5 @@
-import argparse
 import os
 import shutil
-from typing import Any, List, Tuple
 from solcix.errors import NotInstalledError, NoSolcVersionInstalledError
 from solcix.constant import SOLCIX_DIR, ARTIFACT_DIR
 from solcix.installer import (
@@ -9,48 +7,6 @@ from solcix.installer import (
     get_installed_versions,
     install_solc,
 )
-
-
-def current_version() -> Tuple[str, str]:
-    """
-    Get the current version of the Solidity compiler.
-    Local version takes precedence over global version.
-
-    Returns:
-    --------
-    A tuple containing the current version and the source of the version information.
-    """
-    if os.path.isfile(".solcix"):
-        with open(".solcix", "r", encoding="utf-8") as f:
-            version = f.read()
-            source = ".solcix"
-    else:
-        source: str = "SOLC_VERSION"
-        version: Any = os.environ.get(source)
-
-    if not version:
-        source_path = SOLCIX_DIR.joinpath("global-version")
-        source = source_path.as_posix()
-
-        if source_path.is_file():
-            with open(source_path, encoding="utf-8") as f:
-                version = f.read()
-        else:
-            raise NotInstalledError(
-                "💫 No solc version set. Run `solcix use global VERSION`, `solcix use local Version` or set SOLC_VERSION environment variable. 💫"
-            )
-
-    versions: List[str] = get_installed_versions()
-
-    if version not in versions:
-        raise NotInstalledError(
-            f"\n😱 Version '{version}' not installed (set by {source}). 😱"
-            f"\nRun `solcix install {version}`."
-            f"\nOr use one of the following versions:\n"
-            f"{', '.join(versions)}"
-        )
-
-    return version, source
 
 
 def switch_local_version(version: str, always_install: bool) -> None:
@@ -139,7 +95,7 @@ def upgrade_architecture() -> None:
 
     Raises:
     -------
-    argparse.ArgumentTypeError
+    NotInstalledError
         If there are no installed versions of solc.
 
     """
@@ -150,6 +106,20 @@ def upgrade_architecture() -> None:
         install_solc(currently_installed)
         print("🔥 solcix is now up to date! 🔥")
     else:
-        raise argparse.ArgumentTypeError(
-            "Run `solcix install --help` for more information"
-        )
+        raise NotInstalledError("Run `solcix install --help` for more information")
+
+
+def clear_config() -> None:
+    """
+    Clears the current (may be global or local) configuration file.
+
+    Returns:
+    --------
+    None
+    """
+    if os.path.exists(".solcix"):
+        os.remove(".solcix")
+        print("✨ Cleared local configuration ✨")
+    elif os.path.exists(SOLCIX_DIR.joinpath("global-version")):
+        os.remove(SOLCIX_DIR.joinpath("global-version"))
+        print("✨ Cleared global configuration ✨")

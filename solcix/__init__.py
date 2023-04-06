@@ -11,6 +11,7 @@ from .installer import (
     install_solc,
     uninstall_solc,
     verify_solc,
+    current_version,
 )
 from .resolver import (
     get_compatible_versions,
@@ -33,6 +34,7 @@ __all__ = [
     "install_solc",
     "uninstall_solc",
     "verify_solc",
+    "current_version",
     # Resolver
     "get_compatible_versions",
     "get_recommended_version",

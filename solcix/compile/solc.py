@@ -26,7 +26,7 @@ def solc_execute(
     Parameters
     ----------
         - solc_path: Optional path to solc binary.
-            - default to `solc` if not provided.
+            - default to local or global `solc` if not provided.
         - stdin: Optional string to pass as standard input to the solc process.
         - source_files: Optional list of source files to compile.
         - import_remappings: Optional import remappings as either dict, list or string.
@@ -131,9 +131,7 @@ def compile_source(
     optimize: bool = False,
     optimize_runs: Optional[int] = None,
     optimize_yul: bool = False,
-    no_optimize_yul: bool = True,
     yul_optimizations: Optional[int] = None,
-    **kwargs: Any,
 ):
     """
     Compile Solidity source code into EVM bytecode.
@@ -172,8 +170,6 @@ def compile_source(
         - The number of optimization runs to perform.
     - optimize_yul : bool
         - Whether to optimize Yul code.
-    - no_optimize_yul : bool
-        - Whether to disable Yul optimization.
     - yul_optimizations : Optional[int]
         - The level of Yul optimizations to perform.
 
@@ -198,7 +194,6 @@ def compile_source(
         optimize=optimize,
         optimize_runs=optimize_runs,
         optimize_yul=optimize_yul,
-        no_optimize_yul=no_optimize_yul,
         yul_optimizations=yul_optimizations,
     )
 
@@ -220,9 +215,7 @@ def compile_files(
     optimize: bool = False,
     optimize_runs: Optional[int] = None,
     optimize_yul: bool = False,
-    no_optimize_yul: bool = True,
     yul_optimizations: Optional[int] = None,
-    **kwargs: Any,
 ):
     """
         Compile Solidity source code files into EVM bytecode.
@@ -288,7 +281,6 @@ def compile_files(
         optimize=optimize,
         optimize_runs=optimize_runs,
         optimize_yul=optimize_yul,
-        no_optimize_yul=no_optimize_yul,
         yul_optimizations=yul_optimizations,
     )
 
@@ -301,7 +293,6 @@ def compile_standard(
     allow_paths: Optional[Union[List[Union[str, Path]], str, Path]] = None,
     output_dir: Optional[Union[str, Path]] = None,
     overwrite: bool = False,
-    **kwargs: Any,
 ) -> Dict[str, Any]:
     """
     Compile Solidity contracts from standard JSON input.
@@ -395,7 +386,18 @@ def _get_combined_json_outputs(solc_path: Union[Path, str] = None) -> str:
     if solc_path is None:
         solc_path = get_executable()
 
-    help_str = solc_execute(solc_path=solc_path, help=True)[0].split("\n")
+    # help_str = solc_execute(solc_path=solc_path, help=True)[0].split("\n")
+
+    # Execute solc with the `--help` flag to get the combined JSON output options.
+    cmd = [str(solc_path), "--help"]
+    output = subprocess.run(
+        cmd,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    help_str = output.stdout.decode("utf-8").split("\n")
+
     combined_json_args = next(i for i in help_str if i.startswith("  --combined-json"))
     return combined_json_args.split(" ")[-1]
 

@@ -1,13 +1,13 @@
 from .manage import (
-    current_version,
     switch_local_version,
     switch_global_version,
     upgrade_architecture,
+    clear_config,
 )
 
 __all__ = [
-    "current_version",
     "switch_local_version",
     "switch_global_version",
     "upgrade_architecture",
+    "clear_config",
 ]

@@ -8,6 +8,7 @@ from solcix.installer import (
     _get_version_dict,
     get_version_objects,
     get_available_versions,
+    get_installed_versions,
     install_solc,
 )
 from solcix.datatypes import PRAGMA_TYPE, Version
@@ -217,7 +218,7 @@ def install_solc_from_solidity(
     source: Union[str, Path],
     version_resolver: Callable[[PRAGMA_TYPE], str] = None,
     verbose: bool = True,
-):
+) -> str:
     """
     Install the solc version specified in the given source code.
 
@@ -230,6 +231,11 @@ def install_solc_from_solidity(
         If not provided, `get_recommended_version` is used as default resolver.
     - verbose : bool, optional
         - Whether to print the installation progress, by default True
+
+    Returns
+    -------
+    str
+        The version extracted by version resolver solc version.
 
     Raises
     ------
@@ -258,4 +264,7 @@ def install_solc_from_solidity(
     if version_resolver is None:
         version_resolver = get_recommended_version
     recommended_version = version_resolver(version)
-    install_solc(recommended_version, verbose=verbose)
+    installed = get_installed_versions()
+    if recommended_version not in installed:
+        install_solc(recommended_version, verbose=verbose)
+    return recommended_version

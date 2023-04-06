@@ -1,4 +1,3 @@
-import os
 import sys
 import json
 import textwrap
@@ -43,7 +42,7 @@ def install(version: Union[List[str], str], use_cache: bool):
 
 
 @cli.command(help="List available solc versions.")
-def versions():
+def ls():
     releases, latest = solcix.get_available_versions()
     for release, artifact in releases.items():
         print(f"release: {release:6s} | artifact: {artifact}")
@@ -53,16 +52,25 @@ def versions():
 @cli.command(help="List all installed solc versions.")
 def installed():
     installed = solcix.get_installed_versions()
+    installed = sorted(installed, key=Version)
     try:
-        current, _ = solcix.manage.current_version()
+        current, _ = solcix.current_version()
         for version in installed:
             if current == version:
                 print(Fore.GREEN + f"{version} <- current" + Style.RESET_ALL)
             print(version)
     except NotInstalledError as e:
         print(Fore.YELLOW + f"{e}" + Style.RESET_ALL)
-        for version in sorted(installed, key=Version):
+        for version in installed:
             print(version)
+
+@cli.command(help="Show current solc version.")
+def current():
+    try:
+        current, _ = solcix.current_version()
+        print(f"{Fore.GREEN}solc-{current}{Style.RESET_ALL} is currently used.")
+    except NotInstalledError as e:
+        print(Fore.YELLOW + f"{e}" + Style.RESET_ALL)
 
 
 @cli.command(help="Switch between solc versions. If the version is not installed, it will be installed.")
@@ -83,29 +91,50 @@ def uninstall(version: Union[List[str], str]):
     print(Fore.YELLOW + f"skipped: {', '.join(skipped)}" + Style.RESET_ALL)
     print(Fore.RED + f"error  : {', '.join(error)}" + Style.RESET_ALL)
 
+@cli.command(help="Uninstall all solc binaries.")
+def prune():
+    opt = click.confirm(default=False, text="Are you sure to uninstall all solc binaries, caches, and config files?")
+    if opt is False:
+        print(f"{Fore.YELLOW}You have canceled the operation. Indeed, a wise choice!{Style.RESET_ALL}")
+        return
+    # Delete all cached versions
+    solcix.clear_cache()
+    # Delete all config files
+    solcix.manage.clear_config()
+    # Delete all installed versions
+    versions = solcix.get_installed_versions()
+    success, skipped, error = solcix.uninstall_solc(versions)
+    print(Fore.GREEN + f"success: {', '.join(success)}" + Style.RESET_ALL)
+    print(Fore.YELLOW + f"skipped: {', '.join(skipped)}" + Style.RESET_ALL)
+    print(Fore.RED + f"error  : {', '.join(error)}" + Style.RESET_ALL)
 
-@cli.command(
-    help="Verify checksums of installed solc binaries, and reinstall malformed ones."
-)
+
+@cli.command(help="Verify checksums of installed solc binaries, and reinstall malformed ones.")
 @click.argument("version", nargs=-1, required=True, type=click.STRING)
 def verify(version: Union[List[str], str]):
     solcix.verify_solc(version)
-
 
 @cli.command(help="Remove all cached files.")
 def clear():
     solcix.clear_cache()
 
 
-@cli.command(context_settings=dict(ignore_unknown_options=True), help="Compile Solidity files and print the result, if the output is a TTY, the result will be formatted. Otherwise the result will be printed as a JSON string.")
+@cli.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True), help="Compile Solidity files and print the result, if the output is a TTY, the result will be formatted. Otherwise the result will be printed as a JSON string. If you want to show the help message of solc, please use `solc --help`.")
 @click.argument("file", nargs=1, required=True, type=click.Path(exists=True))
 @click.option("-o", "--output", default=None, type=click.Path(), help="Output directory, will be create if not exists.")
-@click.argument("kwargs", nargs=-1, type=click.UNPROCESSED)
-def compile(file: str, output: str, **kwargs):
+@click.pass_context
+def compile(ctx: click.Context, file: str, output: str):
+    params = dict([item.strip('--').split('=') for item in ctx.args])
+    params["source_files"] = file
     if output is not None:
-        os.makedirs(output, exist_ok=True)
-        kwargs["output_dir"] = output
-    compile_result = solcix.compile.compile_files(file, **kwargs)
+        params["output_dir"] = output
+    try:
+        version = solcix.install_solc_from_solidity(source=file)
+        params["solc_version"] = version
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    compile_result = solcix.compile.compile_files(**params)
     if output is not None:
         print(f"Compilation result is saved in the output directory {output}.")
     else:
@@ -120,7 +149,7 @@ def compile(file: str, output: str, **kwargs):
                         padded_str = wrapper.fill(shortend_str)
                         print(padded_str)
             print(Fore.CYAN + "* Output to directory by", Fore.YELLOW + "`solcix compile <FILE> -o <output dir>`" + Style.RESET_ALL)
-            print(Fore.CYAN + "* Print to a single json file by", Fore.YELLOW + "`solcix compile <FILE> <filename>.json`" + Style.RESET_ALL, "to view whole result.")
+            print(Fore.CYAN + "* Print to a single json file by", Fore.YELLOW + "`solcix compile <FILE> <output file>.json`" + Style.RESET_ALL, "to view whole result.")
         else:
             print(json.dumps(compile_result, indent=4, sort_keys=True))
 
@@ -140,10 +169,14 @@ def resolve(file: str, recommand: bool):
             print(version)
 
 
+@cli.command()
+def upgrade():
+    solcix.manage.upgrade_architecture()
+
+
 def solc() -> None:
     try:
-        current = solcix.manage.current_version()
-        version, _ = current
+        version, _  = solcix.current_version()
         path = ARTIFACT_DIR.joinpath(f"solc-{version}", f"solc-{version}")
         subprocess.run([str(path), *sys.argv[1:]], check=True)
     except NotInstalledError as e:
@@ -151,3 +184,6 @@ def solc() -> None:
         sys.exit(1)
     except subprocess.CalledProcessError as e:
         sys.exit(e.returncode)
+
+if __name__ == "__main__":
+    cli()

@@ -68,12 +68,12 @@ solcix versions
 
 ### Listing installed Solidity compilers
 
-The `versions` command can be used to list all available versions of the Solidity compiler:
+The `ls` command can be used to list all available versions of the Solidity compiler:
 
 Example usage:
 
 ```bash
-solcix installed
+solcix ls
 ```
 
 If global / local version is set, it will be displayed as below:
@@ -121,6 +121,16 @@ The `uninstall` command can be used to uninstall one or more versions of the Sol
 ```bash
 solcix uninstall 0.8.4 0.7.6
 ```
+
+### Uninstall all Solidity compilers
+
+To uninstall all versions of Solidity compiler that have been installed using solcix, you can use the following command:
+
+```bash
+solcix prune
+```
+
+This will remove all versions of the Solidity compilers that have been installed by solcix, all cached files, and the solcix configuration file (local config takes precedence over global config).
 
 ### Verify Solidity compilers
 
@@ -207,3 +217,24 @@ These versions are compatible with the pragma.
 0.8.6
 0.8.7
 ```
+
+### Upgrade Solcix
+
+The `upgrade` command is used to upgrade the architecture of the installed solc binaries, it will remove all old binaries and download the new ones.
+
+Example usage:
+
+```bash
+pip3 install -U
+
+# Migrate to the new architecture and Reinstall all binaries
+solcix upgrade
+```
+
+### Project Acknowledgements
+
+We would like to thank the original projects [solc-select](https://github.com/crytic/solc-select) and [py-solc-x](https://github.com/ApeWorX/py-solc-x) for providing excellent code base, upon which we have optimized and improved to make the project more robust and user-friendly.
+
+Our project is an improved and optimized version of solc-select and py-solc-x, with more features and excellent performance.
+
+If you enjoyed the original projects, we strongly recommend trying out our project to enjoy a better user experience and more efficient code execution.
