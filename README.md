@@ -6,16 +6,40 @@ Solcix is a Solidity compiler manager for Python. You can switch between version
 
 To install Solcix, you can use pip, the Python package manager:
 
-### For Windows
+### With pip For Windows
 
 ```bash
 pip install solcix
 ```
 
-### For Linux / Mac
+### With pip3 For Linux / Mac
 
 ```bash
 pip3 install solcix
+```
+
+### With pipx
+
+[pipx](https://github.com/pypa/pipx) installs packages in their own virtual environment, so there's less chance of conflicting dependencies. You can run the following command in your terminal to install:
+
+```bash
+pipx install solcix
+```
+
+### With poetry
+
+Uses the [poetry](https://github.com/python-poetry/poetry) package manager to install solcix in a project-specific virtual environment. poetry manages dependencies for you and allows you to isolate your project from the global environment. You can run the following command in your terminal to add solcix to your poetry project, and use our wrapped solc api in your code:
+
+```bash
+poetry add solcix
+```
+
+### With pipenv
+
+Uses the [pipenv](https://pipenv.pypa.io/en/latest/) package manager to install solcix in a project-specific virtual environment. pipenv also manages dependencies and isolates your project from the global environment, and use our wrapped solc api in your code. You can run the following command in your terminal to install:
+
+```bash
+pipenv install solcix
 ```
 
 ## Usage - CLI
