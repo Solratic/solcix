@@ -118,7 +118,7 @@ Example usage:
 solcix clear
 ```
 
-### Compile Solidit files
+### Compile Solidity files
 
 The `compile` command is used to compile Solidity files and print the result. If the output is a TTY, the result will be formatted. Otherwise, the result will be printed as a JSON string.
 
@@ -156,10 +156,21 @@ solcix resolve <file.sol>
 
 By default, the command prints the recommended solc version for the Solidity file.
 
+Solidity Example:
+
+```solidity
+// SPDX-License-Identifier: MIT
+// compiler version must be `0.8.5`, `0.8.6` or `0.8.7`
+pragma solidity >=0.8.5 <=0.8.7;
+contract HelloWorld {
+    string public greet = "Hello World!";
+}
+```
+
 Example output:
 
 ```bash
-The recommended version is 0.8.0, use `solcix resolve --no-recommand` to see all compatible versions.
+The recommended version is 0.8.5, use `solcix resolve --no-recommand` to see all compatible versions.
 ```
 
 If the `--no-recommand` option is used, the command will print all compatible versions for the Solidity file.
@@ -168,7 +179,7 @@ Example output:
 
 ```bash
 These versions are compatible with the pragma.
-0.7.6
-0.7.5
-0.7.4
+0.8.5
+0.8.6
+0.8.7
 ```
