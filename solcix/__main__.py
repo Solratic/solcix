@@ -81,6 +81,8 @@ def current():
 @click.argument("scope", nargs=1, required=True, type=click.Choice(["global", "local"]))
 @click.argument("version", nargs=1, required=True, type=click.STRING)
 def use(scope: str, version: str):
+    if version == "latest":
+        _, version = solcix.get_available_versions()
     if scope == "global":
         solcix.manage.switch_global_version(version, True)
     elif scope == "local":
