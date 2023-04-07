@@ -7,7 +7,7 @@ from collections import defaultdict
 from glob import glob
 from os import access, makedirs
 from pathlib import Path
-from typing import Iterable, List, Tuple, Union, Optional, Set, Dict, Any
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 from urllib.request import urlopen, urlretrieve
 from zipfile import ZipFile
 
@@ -16,9 +16,9 @@ from joblib import Memory
 
 from solcix.constant import (
     ARTIFACT_DIR,
-    SOLCIX_DIR,
     CRYTIC_SOLC_ARTIFACTS,
     CRYTIC_SOLC_JSON,
+    SOLCIX_DIR,
     EarliestRelease,
     Platform,
 )
@@ -27,9 +27,11 @@ from solcix.errors import (
     ChecksumMismatchError,
     ChecksumMissingError,
     NoSolcVersionInstalledError,
-    UnsupportedPlatformError,
     NotInstalledError,
+    UnsupportedPlatformError,
 )
+
+from .utils import is_valid_version
 
 cachedir = ARTIFACT_DIR.joinpath(".solcix", "cache")
 os.makedirs(cachedir, exist_ok=True)
@@ -353,16 +355,19 @@ def verify_solc(
     """
     if isinstance(version, str):
         version = [version]
+    _, latest = get_available_versions()
+    version = [latest if v == "latest" else v for v in version]
     fixs = []
     for v in version:
         try:
-            v = Version(v)
-            _verify_checksum(v)
-        except AssertionError:
-            if verbose:
-                print(
-                    f"Since solc-{v} is not a valid version, checksum verification is skipped."
-                )
+            if is_valid_version(v):
+                _verify_checksum(v)
+                print(f"Checksum verification passed for solc-{v}.")
+            else:
+                if verbose:
+                    print(
+                        f"Since solc-{v} is not a valid version, checksum verification is skipped."
+                    )
         except ChecksumMismatchError:
             if reinstall:
                 fixs.append(v)

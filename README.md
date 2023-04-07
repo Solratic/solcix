@@ -1,6 +1,6 @@
 # Solcix
 
-[![Version](https://img.shields.io/pypi/v/solcix?color=brightgreen)](https://pypi.org/project/solcix?style=flat) [![Release](https://img.shields.io/github/v/release/Solratic/solcix?include_prereleases?color=brightgreen)](https://github.com/Solratic/solcix)  [![Code Style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black) [![Python Versions](https://img.shields.io/pypi/pyversions/solcix?style=flat)](https://pypi.org/project/solcix/) [![Activity](https://img.shields.io/github/commit-activity/w/Solratic/solcix?color=orange)](https://github.com/Solratic/solcix)
+[![Version](https://img.shields.io/pypi/v/solcix?color=green)](https://pypi.org/project/solcix?style=flat) [![Release](https://img.shields.io/github/v/release/Solratic/solcix?color=green)](https://github.com/Solratic/solcix) [![Python Versions](https://img.shields.io/pypi/pyversions/solcix?style=flat&color=306998)](https://pypi.org/project/solcix/) [![Code Style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black) [![Activity](https://img.shields.io/github/commit-activity/w/Solratic/solcix?color=yellow)](https://github.com/Solratic/solcix) [![License](https://img.shields.io/github/license/Solratic/solcix?style=flat&color=orange)](https://github.com/Solratic/solcix/blob/main/LICENSE)
 
 Solcix is a Solidity version manager written in Python that allows for seamless switching between versions, easy compilation, and simple management of artifacts.
 
@@ -42,6 +42,14 @@ Uses the [pipenv](https://pipenv.pypa.io/en/latest/) package manager to install 
 
 ```bash
 pipenv install solcix
+```
+
+### With pip for main branch
+
+You can also install solcix from github main branch:
+
+```bash
+pip install git+https://github.com/Solratic/solcix.git@main
 ```
 
 ## Enable Auto-Completion
@@ -89,7 +97,7 @@ The `install` command can be used to install one or more versions of the Solidit
 Example usage:
 
 ```bash
-solcix install 0.8.4 0.7.6
+solcix install 0.8.4 0.7.6 latest
 ```
 
 ### Listing installed Solidity compilers
@@ -132,6 +140,11 @@ solcix use global 0.8.16
 ```bash
 # Setting local version to 0.8.16, it will create a .solcix file in the current directory
 solcix use local 0.8.16
+```
+
+```bash
+# You can also use the alias `latest` to use the latest version
+solcix use global latest
 ```
 
 Simply run the command will see the changes:

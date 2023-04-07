@@ -62,7 +62,8 @@ def installed():
         for version in installed:
             if current == version:
                 print(Fore.GREEN + f"{version} <- current" + Style.RESET_ALL)
-            print(version)
+            else:
+                print(version)
     except NotInstalledError as e:
         print(Fore.YELLOW + f"{e}" + Style.RESET_ALL)
         for version in installed:
