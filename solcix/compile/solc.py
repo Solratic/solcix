@@ -417,7 +417,7 @@ def _parse_compiler_output(stdout: str) -> Dict[str, Any]:
         - A dictionary of the compiled contracts and their details.
 
     """
-    output = json.loads(stdout)
+    output: dict = json.loads(stdout)
 
     contracts = output.get("contracts", {})
     sources = output.get("sources", {})
@@ -496,7 +496,6 @@ def _compile_combined_json(
     stdoutdata, stderrdata, command, proc = solc_execute(
         solc_path=solc_path,
         combined_json=combined_json,
-        output_dir=output_dir,
         overwrite=overwrite,
         **kwargs,
     )

@@ -1,3 +1,5 @@
+import os
+import ast
 import sys
 import json
 import textwrap
@@ -126,16 +128,30 @@ def clear():
 @click.option("-o", "--output", default=None, type=click.Path(), help="Output directory, will be create if not exists.")
 @click.pass_context
 def compile(ctx: click.Context, file: str, output: str):
-    params = dict([item.strip('--').split('=') for item in ctx.args])
-    params["source_files"] = file
+    # Parse arguments
+    params = dict()
+    for segment in ctx.args:
+        if segment.startswith("--") and segment.find("=") != 1:
+            key, value = segment.strip("--").split("=")
+            params[key.replace("-","_")] = ast.literal_eval(value)
+
+    # check output directory
     if output is not None:
         params["output_dir"] = output
+        if os.path.exists(output) and "overwrite" not in params:
+            click.confirm(f"Output path `{output}` already exists, do you want to overwrite it?", default=False, abort=True)
+            params["overwrite"] = True
+
+    # check solc version is installed
     try:
         version = solcix.install_solc_from_solidity(source=file)
         params["solc_version"] = version
+        params["source_files"] = file
     except Exception as e:
         print(e)
         sys.exit(1)
+
+    # compile
     compile_result = solcix.compile.compile_files(**params)
     if output is not None:
         print(f"Compilation result is saved in the output directory {output}.")
@@ -156,14 +172,14 @@ def compile(ctx: click.Context, file: str, output: str):
             print(json.dumps(compile_result, indent=4, sort_keys=True))
 
 
-@cli.command()
+@cli.command(help="Resolve the version of solc from the pragma in the Solidity file, and print the recommended version. If you want to see all compatible versions, use `solcix resolve --no-recommand`.")
 @click.argument("file", nargs=1, required=True, type=click.Path(exists=True, dir_okay=False, readable=True))
 @click.option("--recommand/--no-recommand", default=True, is_flag=True)
 def resolve(file: str, recommand: bool):
     pragma = solcix.resolve_version_from_solidity(file)
     if recommand:
         version = solcix.get_recommended_version(pragma)
-        print(f"The recommended version is {version}, use `solcix resolve --no-recommand` to see all compatible versions.")
+        print(f"The recommended version is {Fore.YELLOW}{version}.{Style.RESET_ALL}\nUse {Fore.YELLOW}`solcix resolve --no-recommand`{Style.RESET_ALL} to see all compatible versions.")
     else:
         versions = solcix.get_compatible_versions(pragma)
         print("These versions are compatible with the pragma.")
@@ -171,7 +187,7 @@ def resolve(file: str, recommand: bool):
             print(version)
 
 
-@cli.command()
+@cli.command(help="Reinstall all solc binaries.")
 def upgrade():
     solcix.manage.upgrade_architecture()
 
