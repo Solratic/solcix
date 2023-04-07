@@ -136,7 +136,10 @@ def compile(ctx: click.Context, file: str, output: str):
     for segment in ctx.args:
         if segment.startswith("--") and segment.find("=") != 1:
             key, value = segment.strip("--").split("=")
-            params[key.replace("-","_")] = ast.literal_eval(value)
+            try:
+                params[key.replace("-","_")] = ast.literal_eval(value)
+            except:
+                params[key.replace("-","_")] = value
 
     # check output directory
     if output is not None:
