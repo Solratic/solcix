@@ -1,6 +1,6 @@
 # Solcix
 
-[![Version](https://img.shields.io/pypi/v/solcix?color=brightgreen)](https://pypi.org/project/solcix?style=flat) [![Release](https://img.shields.io/github/v/release/Solratic/solcix?display_name=tag&include_prereleases?color=brightgreen)](https://github.com/Solratic/solcix)  [![Code Style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black) [![Python Versions](https://img.shields.io/pypi/pyversions/solcix?style=flat)](https://pypi.org/project/solcix/) [![Activity](https://img.shields.io/github/commit-activity/w/Solratic/solcix?color=orange)](https://github.com/Solratic/solcix)
+[![Version](https://img.shields.io/pypi/v/solcix?color=brightgreen)](https://pypi.org/project/solcix?style=flat) [![Release](https://img.shields.io/github/v/release/Solratic/solcix?include_prereleases?color=brightgreen)](https://github.com/Solratic/solcix)  [![Code Style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black) [![Python Versions](https://img.shields.io/pypi/pyversions/solcix?style=flat)](https://pypi.org/project/solcix/) [![Activity](https://img.shields.io/github/commit-activity/w/Solratic/solcix?color=orange)](https://github.com/Solratic/solcix)
 
 Solcix is a Solidity version manager written in Python that allows for seamless switching between versions, easy compilation, and simple management of artifacts.
 
