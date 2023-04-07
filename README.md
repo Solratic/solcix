@@ -113,13 +113,12 @@ solcix installed
 If global / local version is set, it will be displayed as below:
 
 ```bash
-0.8.19
-0.5.2
-0.5.1
 0.5.0
-0.8.0 <- current
 0.8.0
 0.8.16
+0.8.17
+0.8.18 <- current
+0.8.19
 ```
 
 ### Switching between Solidity compilers
@@ -176,7 +175,7 @@ solcix uninstall 0.8.4 0.7.6
 To uninstall all versions of Solidity compiler that have been installed using solcix, you can use the following command:
 
 ```bash
-solcix prune
+solcix purge
 ```
 
 This will remove all versions of the Solidity compilers that have been installed by solcix, all cached files, and the solcix configuration file (local config takes precedence over global config).

@@ -99,7 +99,7 @@ def uninstall(version: Union[List[str], str]):
     print(Fore.RED + f"error  : {', '.join(error)}" + Style.RESET_ALL)
 
 @cli.command(help="Uninstall all solc binaries.")
-def prune():
+def purge():
     opt = click.confirm(default=False, text="Are you sure to uninstall all solc binaries, caches, and config files?")
     if opt is False:
         print(f"👀{Fore.YELLOW} You have canceled the operation. Indeed, a wise choice!{Style.RESET_ALL} 👀")
