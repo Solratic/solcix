@@ -479,7 +479,7 @@ def _compile_combined_json(
         solc_path = get_executable(solc_version)
 
     if output_values is None:
-        combined_json = _get_combined_json_outputs(solc_path)
+        combined_json = _get_combined_json_outputs(solc_path).strip()
     else:
         combined_json = ",".join(output_values)
 
