@@ -4,6 +4,8 @@
 
 Solcix is a Solidity version manager written in Python that allows for seamless switching between versions, easy compilation, and simple management of artifacts.
 
+[![asciicast](https://asciinema.org/a/580682.svg)](https://asciinema.org/a/580682)
+
 ## Installation
 
 To install Solcix, you can use pip, the Python package manager:
