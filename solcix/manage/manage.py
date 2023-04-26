@@ -117,7 +117,7 @@ def clear_config() -> None:
     --------
     None
     """
-    if os.path.exists(".solcix"):
+    if os.path.exists(".solcix") and os.path.isfile(".solcix"):
         os.remove(".solcix")
         print("✨ Cleared local configuration ✨")
     elif os.path.exists(SOLCIX_DIR.joinpath("global-version")):
